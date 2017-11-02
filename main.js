@@ -9,6 +9,8 @@ var mainState = {
     },
 
     create: function() {
+        this.score = 0;
+
         this.jumpSound = game.add.audio('jump');
         // Create an empty group
         this.pipes = game.add.group();
@@ -46,6 +48,13 @@ var mainState = {
 
         if (this.bird.angle < 20)
             this.bird.angle += 1;
+
+        this.pipes.forEachAlive(function(pipe) {
+            if (pipe.y >= 0 && this.bird.x > pipe.x && this.bird.x <= pipe.x - pipe.deltaX) {
+                this.score++;
+                console.log(this.score);
+            }
+        }, this);
 
         game.physics.arcade.overlap(
             this.bird, this.pipes, this.hitPipe, null, this);
