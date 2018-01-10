@@ -37,27 +37,26 @@ var mainState = {
         // Call the 'jump' function when the spacekey is hit
         var spaceKey = game.input.keyboard.addKey(
             Phaser.Keyboard.SPACEBAR);
-        spaceKey.onDown.add(this.jump, this);
+        spaceKey.onDown.add(this.dispatchEvent.bind(this, 'click'), this);
     },
 
     update: function() {
         // If the bird is out of the screen (too high or too low)
         // Call the 'restartGame' function
         if (this.bird.y < 0 || this.bird.y > 490)
-            this.restartGame();
+            this.dispatchEvent('hitGround');
 
         if (this.bird.angle < 20)
             this.bird.angle += 1;
 
         this.pipes.forEachAlive(function(pipe) {
             if (pipe.y >= 0 && this.bird.x > pipe.x && this.bird.x <= pipe.x - pipe.deltaX) {
-                this.score++;
-                console.log(this.score);
+                this.dispatchEvent('spanBetweenPipes')
             }
         }, this);
 
         game.physics.arcade.overlap(
-            this.bird, this.pipes, this.hitPipe, null, this);
+            this.bird, this.pipes, this.dispatchEvent.bind(this, 'hitPipe'), null, this);
     },
 
     hitPipe: function() {
@@ -122,6 +121,33 @@ var mainState = {
         // With one big hole at position 'hole' and 'hole + 1'
         this.addOnePipe(400, -380 + hole * 50);
         this.addOnePipe(400, 190 + hole * 50);
+    },
+
+    dispatchEvent: function(event) {
+        this.eventHandler({type:'event', name: event})
+    },
+
+    eventHandler: function(event) {
+        if (!event || !event.name) return;
+        switch (event.name) {
+            case 'click': {
+                this.jump();
+                return
+            }
+            case 'hitGround': {
+                this.restartGame();
+                return
+            }
+            case 'hitPipe': {
+                this.hitPipe();
+                return
+            }
+            case 'spanBetweenPipes': {
+                this.score++;
+                console.log(this.score);
+                return
+            }
+        }
     }
 };
 
